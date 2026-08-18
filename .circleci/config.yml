@@ -1,0 +1,42 @@
+version: 2.1
+
+commands:
+  gh-submodule-resolution:
+    parameters:
+      path:
+        type: string
+      origin-http:
+        type: string
+    steps:
+      - run:
+          name: Submodule resolution
+          command: |
+            set_credential_helper_for_submodule() {
+                MAIN_ORIGIN="$(git remote get-url origin)"
+                SUBMODULE_ORIGIN="${1:?Submodule origin required}"
+
+                sed -i -e '\|^\[credential "'"${MAIN_ORIGIN}"'"]|,+2H;${x;s/^\n//;s|"'"${MAIN_ORIGIN}"'"|"'"${SUBMODULE_ORIGIN}"'"|;x;G}' ~/.gitconfig
+            }
+
+            set_credential_helper_for_submodule "${SUBMODULE_ORIGIN_HTTP}"
+
+            git submodule set-url "${MODULE_PATH}" "${SUBMODULE_ORIGIN_HTTP}"
+            git submodule init
+            git submodule update
+          environment:
+            MODULE_PATH: << parameters.path >>
+            SUBMODULE_ORIGIN_HTTP: << parameters.origin-http >>
+
+jobs:
+  build:
+    docker:
+      - image: archlinux
+    steps:
+      - run: pacman -Syu --noconfirm git
+
+      - checkout
+      - gh-submodule-resolution:
+          path: playground-20260731-submodule
+          origin-http: https://github.com/circle-makotom/playground-20260731-submodule.git
+
+      - run: cat playground-20260731-submodule/README.md

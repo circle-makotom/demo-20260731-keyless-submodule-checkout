@@ -1,0 +1,3 @@
+[submodule "playground-20260731-submodule"]
+	path = playground-20260731-submodule
+	url = git@github.com:circle-makotom/playground-20260731-submodule.git
